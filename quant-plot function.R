@@ -1,3 +1,8 @@
+# updates 5/22/17:
+  # plotting works now
+  # a nice plot title is automatically generated, but user can specify their own
+  # y-axis label automatically generated, but user can specify their own
+
 # for testing: ----
 # library(SWMPr)
 # library(dplyr)
@@ -32,7 +37,11 @@
 
 
 
-quant.plot <- function(data, paramtoplot, yr, yrstart, yrend) {
+quant.plot <- function(data, paramtoplot, 
+                       yr, yrstart, yrend, 
+                       yaxislab = paramtoplot,
+                       maintitle = paste0(toupper(attributes(data)$station)," ", yr," Daily Average ",paste0(toupper(substr(paramtoplot, 1, 1)), substr(paramtoplot, 2, nchar(paramtoplot))),"\noverlaid on ", yrstart," - ", yrend, " daily averages") ) 
+  {
   
   # pull out daily averages; name it 'dat2'
   dat2 <- aggreswmp(data, by='days', FUN='mean')
@@ -117,19 +126,18 @@ quant.plot <- function(data, paramtoplot, yr, yrstart, yrend) {
   all_doy$monthday <- mdy(all_doy$monthday)
   
   
-  # as of 4-5-17 10:15, everything to this point works but the plot won't
-  # because names are different from the original script
-  
   # make a ribbon plot ----
   
   ggplot(all_doy) +
-    geom_ribbon(aes(x=monthday, ymin=min, ymax=max, fill ='0-100 %iles')) +
-    geom_ribbon(aes(x=monthday, ymin=pct25, ymax=pct75, fill ='25-75 %iles')) +
+    geom_ribbon(aes(x=monthday, ymin=X0., ymax=X100., fill ='0-100 %iles')) +
+    geom_ribbon(aes(x=monthday, ymin=X25., ymax=X75., fill ='25-75 %iles')) +
     geom_line(aes(x=monthday, y=paramtoplot, color='year of interest'), lwd=1.3) +
     theme_minimal() +
     scale_x_date(date_labels = "%m/%d", date_breaks = "1 month", date_minor_breaks="1 month") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    labs(x='Day of Year', y=paramtoplot, title=paste0(attributes(data)$station," ", yr," Daily Average ",paramtoplot," overlaid on data from ", yrstart," - ", yrend)) +
+    labs(x='Day of Year', 
+         y=yaxislab, 
+         title=maintitle) +
     scale_color_manual(name='',  values=c('year of interest' = 'red3')) +
     scale_fill_manual(name='', values=c('0-100 %iles' = 'lightgray', '25-75 %iles' = 'gray65'))
   
