@@ -40,7 +40,11 @@
 quant.plot <- function(data, paramtoplot, 
                        yr, yrstart, yrend, 
                        yaxislab = paramtoplot,
-                       maintitle = paste0(toupper(attributes(data)$station)," ", yr," Daily Average ",paste0(toupper(substr(paramtoplot, 1, 1)), substr(paramtoplot, 2, nchar(paramtoplot))),"\noverlaid on ", yrstart," - ", yrend, " daily averages") ) 
+                       maintitle = paste0(toupper(attributes(data)$station)," ", yr," Daily Average ",paste0(toupper(substr(paramtoplot, 1, 1)), substr(paramtoplot, 2, nchar(paramtoplot))),"\noverlaid on ", yrstart," - ", yrend, " daily averages"),
+                       yrcolor = "red3",
+                       bgcolor1 = "lightgray",
+                       bgcolor2 = "gray65") 
+
   {
   
   # pull out daily averages; name it 'dat2'
@@ -125,20 +129,22 @@ quant.plot <- function(data, paramtoplot,
   all_doy$monthday <- paste0(all_doy$monthday, "-2008")
   all_doy$monthday <- mdy(all_doy$monthday)
   
+  # make a year label for the legend
+  yrlabel <- as.character(yr)
   
   # make a ribbon plot ----
   
   ggplot(all_doy) +
-    geom_ribbon(aes(x=monthday, ymin=X0., ymax=X100., fill ='0-100 %iles')) +
-    geom_ribbon(aes(x=monthday, ymin=X25., ymax=X75., fill ='25-75 %iles')) +
-    geom_line(aes(x=monthday, y=paramtoplot, color='year of interest'), lwd=1.3) +
+    geom_ribbon(aes(x=monthday, ymin=X0., ymax=X100., fill ='historical min-max')) +
+    geom_ribbon(aes(x=monthday, ymin=X25., ymax=X75., fill ='historical 25-75 %iles')) +
+    geom_line(aes(x=monthday, y=paramtoplot, color=yrcolor), lwd=1.3) +
     theme_minimal() +
     scale_x_date(date_labels = "%m/%d", date_breaks = "1 month", date_minor_breaks="1 month") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(x='Day of Year', 
          y=yaxislab, 
          title=maintitle) +
-    scale_color_manual(name='',  values=c('year of interest' = 'red3')) +
-    scale_fill_manual(name='', values=c('0-100 %iles' = 'lightgray', '25-75 %iles' = 'gray65'))
+    scale_color_manual(name='',  values=yrcolor, labels=yrlabel) +
+    scale_fill_manual(name='', values=c('historical min-max' = bgcolor1, 'historical 25-75 %iles' = bgcolor2))
   
 }
